@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EazyGen | Universal File Converter & Offline Utilities by ByteCraft Studio</title>
+  
+  <!-- SEO & Performance Meta Tags -->
+  <meta name="author" content="ByteCraft Studio">
+  <meta name="description" content="Ultimate private, serverless client-side PWA tool catalog. Convert, compress, merge, protect, water-mark, and sign files 100% offline.">
+  <meta name="theme-color" content="#020617">
+  
+  <!-- PWA configurations -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- PDF-Lib Client-Side Manipulation Library -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Stylesheet -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=3.1">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen relative py-8 px-4 md:px-8 select-none flex flex-col items-center">
+
+  <!-- Glow Background Orbs -->
+  <div class="orb orb-indigo"></div>
+  <div class="orb orb-purple"></div>
+
+  <!-- Main Container -->
+  <div class="w-full max-w-6xl z-10 flex flex-col flex-1">
+    
+    <!-- Top Bar Header -->
+    <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+      <div>
+        <div class="flex items-center gap-3">
+          <!-- The New EG Logo Badge -->
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 border border-violet-500/35 hover:scale-105 transition-all cursor-pointer" title="EazyGen Logo">
+            <span class="text-white font-extrabold text-lg tracking-wider font-heading">EG</span>
+          </div>
+          <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">EazyGen</h1>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Privacy-First Browser Utility Hub • Serverless & Local</p>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-200/60 dark:bg-slate-800/50 px-2.5 py-0.5 rounded border border-slate-300 dark:border-slate-700/50 mt-2 inline-block">A Premium Digital Utility by ByteCraft Studio</span>
+      </div>
+
+      <!-- Status Badges & Toggle -->
+      <div class="flex items-center gap-3 self-start md:self-auto">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="p-2.5 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-855 hover:bg-slate-50 dark:hover:bg-slate-800/85 text-slate-655 dark:text-slate-400 transition-all active:scale-95 flex items-center justify-center shadow-sm" title="Toggle Light/Dark Theme">
+          <!-- Sun Icon (visible in Dark mode) -->
+          <svg id="theme-toggle-sun" class="w-4.5 h-4.5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+          </svg>
+          <!-- Moon Icon (visible in Light mode) -->
+          <svg id="theme-toggle-moon" class="w-4.5 h-4.5 block dark:hidden text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+
+        <!-- Online/Offline Badge -->
+        <div id="status-badge" class="glass-panel px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-semibold">
+          <span id="status-badge-dot" class="w-2 h-2 rounded-full bg-emerald-500 online-pulse"></span>
+          <span id="status-badge-text" class="text-slate-600 dark:text-slate-300">Online Mode</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Privacy Banner -->
+    <div class="glass-panel p-4 rounded-2xl mb-8 border-indigo-500/20 bg-indigo-950/15 relative overflow-hidden w-full">
+      <div class="flex gap-3 items-start relative z-10">
+        <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 mt-0.5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        </div>
+        <div>
+          <h4 class="text-indigo-650 dark:text-indigo-300 font-semibold text-sm">🔒 Privacy Guarantee</h4>
+          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5 leading-relaxed">
+            EazyGen processes all files locally in your browser. We never upload, view, or store your documents or data on any database. Works 100% offline.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filters Container -->
+    <section class="mb-8 space-y-4 w-full">
+      <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <!-- Search bar -->
+        <div class="relative w-full md:w-80">
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-550">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </span>
+          <input type="text" id="tool-search" placeholder="Search tool catalog..." class="w-full glass-input rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 overflow-x-auto w-full md:w-auto p-1 scrollbar-none">
+          <button data-filter="all" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold border transition-all active:scale-95 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-transparent shadow-md shadow-indigo-500/20">All</button>
+          <button data-filter="convert" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold border border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all active:scale-95">Convert</button>
+          <button data-filter="organize" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold border border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all active:scale-95">Organize</button>
+          <button data-filter="security" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold border border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all active:scale-95">Security</button>
+          <button data-filter="ai" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold border border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all active:scale-95">AI & Advanced</button>
+          <button data-filter="custom" class="filter-tab px-4 py-2 rounded-xl text-xs font-bold border border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all active:scale-95">Custom</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tool Catalog Grid -->
+    <section id="tool-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12 w-full">
+      
+      <!-- Card: Merge PDF -->
+      <div data-category="organize" data-tool="merge-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Merge PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Combine multiple PDFs in a specified order.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Split PDF -->
+      <div data-category="organize" data-tool="split-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Split PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Separate one page or range into independent files.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Organize PDF -->
+      <div data-category="organize" data-tool="organize-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Organize PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Sort, delete, or add pages inside a document.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Rotate PDF -->
+      <div data-category="organize" data-tool="rotate-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Rotate PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Rotate pages individually or all at once.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Crop PDF -->
+      <div data-category="organize" data-tool="crop-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Crop PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Crop margins or custom areas of document layouts.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Page Numbers -->
+      <div data-category="organize" data-tool="page-numbers" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Page Numbers</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Stamp page indexing numbers with customizable styling.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Watermark -->
+      <div data-category="organize" data-tool="watermark" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-indigo-400 p-2.5 bg-indigo-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Watermark</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Stamp text/image stamps over PDF pages with opacity controls.</p>
+        </div>
+        <div class="text-xs font-semibold text-indigo-400/80 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 w-fit self-end">Organize</div>
+      </div>
+
+      <!-- Card: Compress PDF -->
+      <div data-category="organize" data-tool="compress-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-purple-400 p-2.5 bg-purple-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Compress PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Reduce PDF sizing constraints locally in-browser.</p>
+        </div>
+        <div class="text-xs font-semibold text-purple-400/80 bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10 w-fit self-end">Optimize</div>
+      </div>
+
+      <!-- Card: Repair PDF -->
+      <div data-category="organize" data-tool="repair-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-purple-400 p-2.5 bg-purple-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Repair PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Fix corrupt syntax structures and recover PDF pages.</p>
+        </div>
+        <div class="text-xs font-semibold text-purple-400/80 bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10 w-fit self-end">Optimize</div>
+      </div>
+
+      <!-- Card: Protect PDF -->
+      <div data-category="security" data-tool="protect-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-emerald-400 p-2.5 bg-emerald-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Protect PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Lock files with advanced client-side passwords.</p>
+        </div>
+        <div class="text-xs font-semibold text-emerald-400/80 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 w-fit self-end">Security</div>
+      </div>
+
+      <!-- Card: Unlock PDF -->
+      <div data-category="security" data-tool="unlock-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-emerald-400 p-2.5 bg-emerald-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Unlock PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Remove security restrictions and owner passwords.</p>
+        </div>
+        <div class="text-xs font-semibold text-emerald-400/80 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 w-fit self-end">Security</div>
+      </div>
+
+      <!-- Card: Redact PDF -->
+      <div data-category="security" data-tool="redact-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-emerald-400 p-2.5 bg-emerald-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Redact PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Blackout and permanently erase sensitive page data.</p>
+        </div>
+        <div class="text-xs font-semibold text-emerald-400/80 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 w-fit self-end">Security</div>
+      </div>
+
+      <!-- Card: Sign PDF -->
+      <div data-category="security" data-tool="sign-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-emerald-400 p-2.5 bg-emerald-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Sign PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Draw, generate, and overlay electronic signatures on pages.</p>
+        </div>
+        <div class="text-xs font-semibold text-emerald-400/80 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 w-fit self-end">Security</div>
+      </div>
+
+      <!-- Card: PDF to Word / Word to PDF -->
+      <div data-category="convert" data-tool="pdf-to-word" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">PDF &lt;&gt; Word</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Two-way conversion between PDFs and editable DOCX formats.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: PDF &lt;&gt; PPT -->
+      <div data-category="convert" data-tool="pdf-to-ppt" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">PDF &lt;&gt; PPT</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Turn PDF slides into PowerPoint presentations and vice-versa.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: PDF &lt;&gt; Excel -->
+      <div data-category="convert" data-tool="pdf-to-excel" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">PDF &lt;&gt; Excel</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Extract grid tables from sheets to Excel and back.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: PDF &lt;&gt; Image -->
+      <div data-category="convert" data-tool="pdf-to-jpg" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">PDF &lt;&gt; JPG</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Extract high-res JPG sheets or compile scans into a single PDF.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: HTML to PDF -->
+      <div data-category="convert" data-tool="html-to-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">HTML to PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Convert web URL URLs or custom raw HTML structures to PDF documents.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: PDF to Markdown -->
+      <div data-category="convert" data-tool="pdf-to-markdown" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">PDF to Markdown</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Strip out styled PDF tags and extract formatted clean markdown text.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: PDF to PDF/A -->
+      <div data-category="convert" data-tool="pdf-to-pdfa" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">PDF to PDF/A</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Stabilize documents to ISO standard archiving standards.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: Image Converter -->
+      <div data-category="convert" data-tool="image-converter" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Image Converter</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Batch translate formats between JPG, PNG, WEBP, and GIF.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: Video Extractor -->
+      <div data-category="convert" data-tool="video-extractor" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-blue-400 p-2.5 bg-blue-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Audio Extractor</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Extract raw audio channels (MP3) from MP4 video streams.</p>
+        </div>
+        <div class="text-xs font-semibold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 w-fit self-end">Convert</div>
+      </div>
+
+      <!-- Card: AI Summarizer -->
+      <div data-category="ai" data-tool="ai-summarizer" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-amber-400 p-2.5 bg-amber-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">AI Summarizer</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Generate bulleted outlines from documents locally using text analysis.</p>
+        </div>
+        <div class="text-xs font-semibold text-amber-400/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit self-end">AI & Adv</div>
+      </div>
+
+      <!-- Card: OCR PDF -->
+      <div data-category="ai" data-tool="ocr-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-amber-400 p-2.5 bg-amber-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">OCR Document</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Extract text characters from scanned sheet formats.</p>
+        </div>
+        <div class="text-xs font-semibold text-amber-400/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit self-end">AI & Adv</div>
+      </div>
+
+      <!-- Card: Scan to PDF -->
+      <div data-category="ai" data-tool="scan-to-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-amber-400 p-2.5 bg-amber-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Scan to PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Capture scans from device camera source to styled PDF layouts.</p>
+        </div>
+        <div class="text-xs font-semibold text-amber-400/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit self-end">AI & Adv</div>
+      </div>
+
+      <!-- Card: Translate PDF -->
+      <div data-category="ai" data-tool="translate-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-amber-400 p-2.5 bg-amber-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 0A18.015 18.015 0 0110 14.58M10 14.58L6.412 9m3.588 5.58C7.4 19.333 4.667 21 2 21m14-5.5a2.5 2.5 0 115 0v1a2.5 2.5 0 01-5 0v-1z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Translate PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Translate document text layers while preserving layout bounds.</p>
+        </div>
+        <div class="text-xs font-semibold text-amber-400/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit self-end">AI & Adv</div>
+      </div>
+
+      <!-- Card: Compare PDF -->
+      <div data-category="ai" data-tool="compare-pdf" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-amber-400 p-2.5 bg-amber-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">Compare PDF</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Side-by-side comparison visualization to spot document differences.</p>
+        </div>
+        <div class="text-xs font-semibold text-amber-400/80 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10 w-fit self-end">AI & Adv</div>
+      </div>
+
+      <!-- Card: File Compressor -->
+      <div data-category="custom" data-tool="file-compressor" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-pink-400 p-2.5 bg-pink-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">File Compressor</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Target quality resampler with live space-saved calculations.</p>
+        </div>
+        <div class="text-xs font-semibold text-pink-400/80 bg-pink-500/5 px-2 py-0.5 rounded border border-pink-500/10 w-fit self-end">Custom</div>
+      </div>
+
+      <!-- Card: QR Generator -->
+      <div data-category="custom" data-tool="qr-generator" class="tool-card glass-card p-5 rounded-2xl cursor-pointer flex flex-col justify-between h-44">
+        <div>
+          <div class="text-pink-400 p-2.5 bg-pink-500/10 rounded-xl w-fit mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+          </div>
+          <h3 class="text-slate-200 font-bold text-base">QR Generator</h3>
+          <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Turn URL text links into color-customizable QR Codes instantly.</p>
+        </div>
+        <div class="text-xs font-semibold text-pink-400/80 bg-pink-500/5 px-2 py-0.5 rounded border border-pink-500/10 w-fit self-end">Custom</div>
+      </div>
+
+    </section>
+
+    <!-- App Info Footer -->
+    <footer class="mt-12 py-6 text-center text-xs border-t border-slate-200/65 dark:border-slate-700/30 bg-slate-100/35 dark:bg-slate-900/40 backdrop-blur-sm w-full rounded-2xl shadow-sm dark:shadow-none">
+      <p class="font-bold text-slate-750 dark:text-slate-300">© 2026 ByteCraft Studio. All rights reserved.</p>
+      <p class="text-[10px] text-slate-500 dark:text-slate-500 mt-1.5 max-w-lg mx-auto leading-relaxed">
+        EazyGen is an independent open-source utility engineered locally with strict browser-side privacy guidelines.
+      </p>
+    </footer>
+
+  </div>
+
+  <!-- Global Modal Overlay -->
+  <div id="tool-modal" class="modal-overlay">
+    <!-- Modal Window Wrap -->
+    <div class="modal-content-wrapper w-full max-w-4xl glass-panel-heavy rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800/80 px-6 py-4.5 bg-slate-950/40">
+        <div class="flex items-center gap-3">
+          <button id="modal-close-btn" class="p-2 text-slate-400 hover:text-slate-200 bg-slate-900/50 hover:bg-slate-900 border border-slate-800 rounded-xl transition-all active:scale-90 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <div>
+            <h2 id="modal-tool-title" class="font-extrabold text-lg text-slate-100 heading-style">Tool Title</h2>
+            <p id="modal-tool-desc" class="text-slate-400 text-xs mt-0.5">Tool descriptive text</p>
+          </div>
+        </div>
+        <div class="text-[10px] tracking-wider uppercase bg-indigo-500/15 border border-indigo-500/35 px-2.5 py-1 rounded-lg text-indigo-300 font-bold">
+          Local Process
+        </div>
+      </div>
+
+      <!-- Modal Body (Content changes dynamically depending on active tool) -->
+      <div class="p-6 md:p-8 overflow-y-auto flex-1">
+        
+        <!-- TEMPLATE: Common Dropzone Shell (used by multiple tools) -->
+        <div id="common-dropzone-view" class="space-y-6 hidden">
+          <div id="main-dropzone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/50 bg-slate-900/15 hover:bg-indigo-500/5 rounded-2xl p-10 flex flex-col items-center justify-center gap-3.5 cursor-pointer transition-all duration-300">
+            <input type="file" id="modal-file-input" class="hidden">
+            <div class="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            </div>
+            <div class="text-center">
+              <p class="font-bold text-slate-200 text-sm">Drag & drop files here, or click to browse</p>
+              <p id="dropzone-hint" class="text-slate-500 text-xs mt-1">Supports PDF, DOCX, XLSX, images...</p>
+            </div>
+          </div>
+          
+          <!-- Queue List -->
+          <div id="file-queue-container" class="hidden space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-sm text-slate-300">Queue List</h4>
+              <button id="clear-queue-btn" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition-colors">Clear All</button>
+            </div>
+            <div id="file-queue-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <!-- file items dynamically appended here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: Sign PDF -->
+        <div id="ws-sign-pdf" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Draw Signature</h4>
+              <canvas id="signature-canvas" width="350" height="180" class="w-full rounded-2xl"></canvas>
+              <div class="flex gap-2">
+                <button id="clear-signature-btn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold active:scale-95 transition-all">Clear</button>
+                <button id="save-signature-btn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all">Lock Brush</button>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Upload PDF to Sign</h4>
+              <div id="sign-dropzone" class="border border-dashed border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-indigo-500">
+                <input type="file" id="sign-pdf-input" class="hidden" accept=".pdf">
+                <span class="text-xs text-slate-400 block font-medium" id="sign-dropzone-text">Click to choose PDF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: Scan to PDF -->
+        <div id="ws-scan-to-pdf" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Camera Viewport</h4>
+              <div class="camera-view-container aspect-video w-full flex items-center justify-center text-slate-500 relative">
+                <video id="scan-video" autoplay playsinline class="w-full h-full object-cover rounded-xl"></video>
+                <div class="scan-line"></div>
+                <div id="camera-fallback-msg" class="absolute inset-0 flex items-center justify-center bg-slate-950/80 text-xs p-4 text-center hidden">
+                  Camera not running. Click "Start Camera".
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button id="start-camera-btn" class="px-4 py-2.5 bg-slate-855 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all">Start Camera</button>
+                <button id="snap-camera-btn" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-all">Capture Page</button>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Captured Output Filter</h4>
+              <div class="glass-panel p-4 rounded-2xl border-slate-800 space-y-4 flex flex-col items-center justify-center min-h-[160px]">
+                <canvas id="scan-canvas" class="max-h-[140px] max-w-full rounded bg-slate-900 border border-slate-800 hidden"></canvas>
+                <p id="scan-placeholder" class="text-xs text-slate-500">No snapshot taken yet.</p>
+                
+                <div class="w-full space-y-2 mt-2">
+                  <label class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Document Enhancer</label>
+                  <select id="scan-filter" class="w-full bg-slate-800 border border-slate-750 text-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none">
+                    <option value="none">Original Colors</option>
+                    <option value="monochrome">Monochrome Document</option>
+                    <option value="contrast">High Contrast Text</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: HTML to PDF -->
+        <div id="ws-html-to-pdf" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <label for="html-input-area" class="font-bold text-sm text-slate-300 block">Edit HTML Source Code</label>
+              <textarea id="html-input-area" rows="8" placeholder="<h1>Hello EazyGen</h1><p>Offline PDF creator.</p>" class="w-full glass-input rounded-xl p-4 text-xs font-mono focus:outline-none focus:border-indigo-500"></textarea>
+            </div>
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Visual Layout Sandbox</h4>
+              <div class="w-full bg-white rounded-xl overflow-hidden aspect-video border border-slate-800">
+                <iframe id="html-preview-frame" class="w-full h-full bg-white"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: Watermark PDF -->
+        <div id="ws-watermark" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Source PDF Dropzone -->
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Target PDF File</h4>
+              <div id="watermark-dropzone" class="border border-dashed border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-indigo-500">
+                <input type="file" id="watermark-pdf-input" class="hidden" accept=".pdf">
+                <span class="text-xs text-slate-400 block font-medium" id="watermark-dropzone-text">Click to choose PDF</span>
+              </div>
+            </div>
+            <!-- Watermark Options -->
+            <div class="glass-panel p-5 rounded-2xl border-slate-800 space-y-4">
+              <h4 class="font-bold text-sm text-slate-200">Watermark Configuration</h4>
+              <div class="space-y-3">
+                <div>
+                  <label for="watermark-text" class="block text-xs text-slate-400">Stamp Text</label>
+                  <input type="text" id="watermark-text" value="CONFIDENTIAL" class="w-full glass-input rounded-lg px-3 py-2 text-xs focus:outline-none mt-1">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label for="watermark-opacity" class="block text-xs text-slate-400">Opacity (0.1 - 1)</label>
+                    <input type="number" id="watermark-opacity" min="0.1" max="1" step="0.1" value="0.3" class="w-full glass-input rounded-lg px-3 py-2 text-xs focus:outline-none mt-1">
+                  </div>
+                  <div>
+                    <label for="watermark-rotation" class="block text-xs text-slate-400">Rotation Angle</label>
+                    <input type="number" id="watermark-rotation" min="-360" max="360" value="-45" class="w-full glass-input rounded-lg px-3 py-2 text-xs focus:outline-none mt-1">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: AI Tools (Text panels) -->
+        <div id="ws-ai-text-view" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">File Ingest</h4>
+              <div id="ai-dropzone" class="border border-dashed border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-indigo-500">
+                <input type="file" id="ai-file-input" class="hidden">
+                <span class="text-xs text-slate-400 block font-medium" id="ai-dropzone-text">Click to choose File (PDF/TXT)</span>
+              </div>
+              <div id="ai-options-sub" class="space-y-2 hidden">
+                <label id="ai-extra-label" class="block text-xs text-slate-400">Options</label>
+                <select id="ai-extra-select" class="w-full bg-slate-800 border border-slate-750 text-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none">
+                  <!-- dynamically populated option list -->
+                </select>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">Processed Output Results</h4>
+              <div class="glass-panel p-4 rounded-2xl border-slate-800 min-h-[160px] flex flex-col justify-between">
+                <div id="ai-output-content" class="text-xs text-slate-350 leading-relaxed font-mono overflow-y-auto max-h-40">
+                  Waiting for file upload and execution...
+                </div>
+                <button id="copy-ai-output-btn" class="mt-4 py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 self-end hidden">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                  Copy Text
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: Compare PDF -->
+        <div id="ws-compare-pdf" class="space-y-6 hidden">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-xs text-slate-400 font-bold block">Document A (Original)</label>
+              <div id="compare-a-dropzone" class="border border-dashed border-slate-700 rounded-2xl p-4 text-center cursor-pointer hover:border-indigo-500">
+                <input type="file" id="compare-a-input" class="hidden">
+                <span class="text-xs text-slate-500 block" id="compare-a-text">Choose file</span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label class="text-xs text-slate-400 font-bold block">Document B (Modified)</label>
+              <div id="compare-b-dropzone" class="border border-dashed border-slate-700 rounded-2xl p-4 text-center cursor-pointer hover:border-indigo-500">
+                <input type="file" id="compare-b-input" class="hidden">
+                <span class="text-xs text-slate-500 block" id="compare-b-text">Choose file</span>
+              </div>
+            </div>
+          </div>
+          
+          <div id="comparison-results" class="glass-panel p-5 rounded-2xl border-slate-800 space-y-3 hidden">
+            <h4 class="font-bold text-sm text-slate-200">Comparison Report</h4>
+            <div class="p-3 bg-slate-950/50 border border-slate-900 rounded-xl text-xs space-y-2 leading-relaxed">
+              <div class="flex items-center gap-4 text-[10px] text-slate-500 border-b border-slate-900 pb-1.5 font-bold uppercase">
+                <span>🟢 Additions / Variance</span>
+              </div>
+              <div id="diff-output" class="font-mono text-slate-350 whitespace-pre-line max-h-40 overflow-y-auto">
+                <!-- compared text output -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: File Compressor -->
+        <div id="ws-file-compressor" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-bold text-sm text-slate-300">File Settings</h4>
+              <div id="comp-dropzone-modal" class="border border-dashed border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-purple-500 bg-slate-900/15">
+                <input type="file" id="comp-file-modal-input" class="hidden" accept=".pdf,image/png,image/jpeg,image/webp">
+                <span class="text-xs text-slate-400 block font-medium" id="comp-modal-text">Choose PDF, PNG, JPG, or WEBP file</span>
+              </div>
+              
+              <div id="comp-slider-wrapper" class="space-y-3 hidden">
+                <div class="flex justify-between">
+                  <label class="text-xs text-slate-400 font-bold block">Desired Compression Amount (%)</label>
+                  <span id="comp-slider-val" class="text-xs font-bold text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded">40% Reduction</span>
+                </div>
+                <input type="range" id="comp-slider" min="10" max="90" value="40" class="custom-slider w-full">
+              </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border-slate-800 flex flex-col justify-between min-h-[220px]">
+              <!-- Size Comparison Board -->
+              <div id="comp-size-comparison" class="w-full space-y-3">
+                <h5 class="text-xs font-bold text-slate-400 uppercase tracking-wider">File Size Metrics</h5>
+                <div class="grid grid-cols-3 gap-2.5">
+                  <div class="bg-slate-900/20 p-2.5 rounded-xl border border-slate-850 text-center">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Original</div>
+                    <div id="comp-orig-size" class="text-xs font-extrabold text-slate-200 mt-1">—</div>
+                  </div>
+                  <div class="bg-slate-900/20 p-2.5 rounded-xl border border-slate-850 text-center">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Target (Est)</div>
+                    <div id="comp-target-size" class="text-xs font-extrabold text-indigo-400 mt-1">—</div>
+                  </div>
+                  <div class="bg-slate-900/20 p-2.5 rounded-xl border border-slate-850 text-center">
+                    <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Compressed</div>
+                    <div id="comp-new-size" class="text-xs font-extrabold text-emerald-400 mt-1">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Interactive Progress Bar -->
+              <div id="comp-progress-container" class="w-full space-y-2 hidden mt-4">
+                <div class="flex justify-between text-[11px] font-semibold text-slate-400">
+                  <span id="comp-progress-status">Optimizing file...</span>
+                  <span id="comp-progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden border border-slate-700/50">
+                  <div id="comp-progress-fill" class="bg-gradient-to-r from-violet-600 to-indigo-600 h-full rounded-full transition-all duration-150" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <div id="comp-report-wrapper" class="w-full text-center space-y-2.5 mt-4 hidden">
+                <div class="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-lg py-1 px-3 inline-block">
+                  ⚡ Successfully Compressed! Space Saved: <span id="comp-space-saved" class="font-bold">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPECIAL WORKSPACE: QR Generator -->
+        <div id="ws-qr-generator" class="space-y-6 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label for="qr-url-input" class="block text-slate-400 text-xs">Target URL / Text Data</label>
+                <input type="text" id="qr-url-input" placeholder="https://example.com" class="w-full glass-input rounded-xl px-4 py-2.5 text-xs focus:outline-none mt-1.5">
+              </div>
+              
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label for="qr-fg-color-modal" class="block text-slate-400 text-[10px] uppercase font-bold">Dark Color</label>
+                  <input type="color" id="qr-fg-color-modal" value="#000000" class="w-full h-9 rounded-lg bg-transparent border-0 cursor-pointer mt-1">
+                </div>
+                <div>
+                  <label for="qr-bg-color-modal" class="block text-slate-400 text-[10px] uppercase font-bold">Light Color</label>
+                  <input type="color" id="qr-bg-color-modal" value="#ffffff" class="w-full h-9 rounded-lg bg-transparent border-0 cursor-pointer mt-1">
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl border-slate-800 flex flex-col items-center justify-center gap-4">
+              <div class="p-3 bg-white rounded-xl shadow-xl max-w-[140px] aspect-square flex items-center justify-center">
+                <div id="qrcode-modal-render" class="w-full h-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic configuration options (opacity, passwords, image outputs) -->
+        <div id="workspace-extra-controls" class="mt-6 border-t border-slate-200/60 dark:border-slate-800/80 pt-6 hidden">
+          <!-- loaded controls dynamically -->
+        </div>
+
+      </div>
+
+      <!-- Modal Footer Action -->
+      <div class="px-6 py-4 bg-slate-950/30 border-t border-slate-800/80 flex justify-end gap-3 items-center">
+        <!-- Close/Back -->
+        <button id="modal-cancel-btn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all active:scale-95">
+          Cancel
+        </button>
+        <!-- Process Action Trigger -->
+        <button id="modal-run-btn" class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold transition-all active:scale-95 glow-btn-indigo flex items-center gap-1.5 shadow-lg shadow-indigo-500/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Run Tool
+        </button>
+        <!-- Download Trigger (Hidden by default until Process complete) -->
+        <button id="modal-download-btn" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shadow-lg shadow-emerald-500/10 hidden">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          Download Results
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="qrcode.min.js"></script>
+  <script src="app.js?v=3.1"></script>
+</body>
+</html>

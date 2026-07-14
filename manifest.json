@@ -1,0 +1,21 @@
+{
+  "name": "EazyGen - Offline File Utility Hub",
+  "short_name": "EazyGen",
+  "description": "Ultra-fast, all-in-one file utility hub featuring a file converter, compressor, and URL-to-QR code generator. 100% offline and local.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
