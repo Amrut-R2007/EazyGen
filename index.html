@@ -16,6 +16,8 @@
 
   <!-- PDF-Lib Client-Side Manipulation Library -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <!-- PDF.js Client-Side PDF Renderer Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -35,7 +37,7 @@
 
   <!-- Google Fonts & Stylesheet -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3.1">
+  <link rel="stylesheet" href="styles.css?v=3.2">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen relative py-8 px-4 md:px-8 select-none flex flex-col items-center">
 
@@ -537,7 +539,19 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
               <h4 class="font-bold text-sm text-slate-300">Draw Signature</h4>
-              <canvas id="signature-canvas" width="350" height="180" class="w-full rounded-2xl"></canvas>
+              <canvas id="signature-canvas" width="350" height="180" class="w-full rounded-2xl bg-white border border-slate-300 shadow-inner"></canvas>
+              <div class="flex items-center gap-3 my-2">
+                <span class="text-xs text-slate-400 font-semibold">Ink Color:</span>
+                <div class="flex items-center gap-2">
+                  <button type="button" data-color="#000000" class="sig-color-btn w-6 h-6 rounded-full border-2 border-slate-350 bg-black cursor-pointer transition-transform hover:scale-110 active:scale-95" title="Black"></button>
+                  <button type="button" data-color="#4169e1" class="sig-color-btn w-6 h-6 rounded-full border-2 border-transparent bg-blue-600 cursor-pointer transition-transform hover:scale-110 active:scale-95" title="Royal Blue"></button>
+                  <button type="button" data-color="#8b0000" class="sig-color-btn w-6 h-6 rounded-full border-2 border-transparent bg-red-800 cursor-pointer transition-transform hover:scale-110 active:scale-95" title="Dark Red"></button>
+                  <div class="relative w-6 h-6 rounded-full overflow-hidden border border-slate-700 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center bg-gradient-to-tr from-rose-500 via-emerald-500 to-indigo-500 cursor-pointer">
+                    <input type="color" id="sig-color-picker" value="#000000" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                    <span class="text-[9px] text-white font-extrabold pointer-events-none">+</span>
+                  </div>
+                </div>
+              </div>
               <div class="flex gap-2">
                 <button id="clear-signature-btn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold active:scale-95 transition-all">Clear</button>
                 <button id="save-signature-btn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all">Lock Brush</button>
@@ -702,6 +716,23 @@
             </div>
           </div>
         </div>
+        
+        <!-- SPECIAL WORKSPACE: Redact PDF -->
+        <div id="ws-redact-pdf" class="space-y-6 hidden">
+          <div class="space-y-4">
+            <h4 class="font-bold text-sm text-slate-300">File Ingestion</h4>
+            <div id="redact-dropzone" class="border border-dashed border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-indigo-500 bg-slate-900/15">
+              <input type="file" id="redact-file-input" class="hidden" accept=".pdf">
+              <span class="text-xs text-slate-400 block font-medium" id="redact-dropzone-text">Click to choose PDF to Redact</span>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <h4 class="font-bold text-sm text-slate-300">Interactive Redaction Workspace</h4>
+            <div id="redact-pages-container" class="space-y-6 max-h-[50vh] overflow-y-auto pr-2 bg-slate-950/20 border border-slate-800 rounded-2xl p-4">
+              <p class="text-xs text-slate-500 text-center py-8">Select a document first to load interactive pages here.</p>
+            </div>
+          </div>
+        </div>
 
         <!-- SPECIAL WORKSPACE: File Compressor -->
         <div id="ws-file-compressor" class="space-y-6 hidden">
@@ -821,6 +852,6 @@
 
   <!-- Scripts -->
   <script src="qrcode.min.js"></script>
-  <script src="app.js?v=3.1"></script>
+  <script src="app.js?v=3.2"></script>
 </body>
 </html>

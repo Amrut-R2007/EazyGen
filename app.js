@@ -2,6 +2,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   
+  // Configure PDF.js Worker
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  }
+
   // ==========================================
   // 1. SERVICE WORKER, OFFLINE INDICATOR & THEME TOGGLE
   // ==========================================
@@ -111,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const wsComparePdf = document.getElementById('ws-compare-pdf');
   const wsFileCompressor = document.getElementById('ws-file-compressor');
   const wsQrGenerator = document.getElementById('ws-qr-generator');
+  const wsRedactPdf = document.getElementById('ws-redact-pdf');
   
   // Queue & Upload References
   const mainDropzone = document.getElementById('main-dropzone');
@@ -159,13 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
     modalDownloadBtn.classList.add('hidden');
 
     // Hide all workspaces
-    [commonDropzone, wsSignPdf, wsScanToPdf, wsHtmlToPdf, wsWatermark, wsAiTextView, wsComparePdf, wsFileCompressor, wsQrGenerator].forEach(v => {
+    [commonDropzone, wsSignPdf, wsScanToPdf, wsHtmlToPdf, wsWatermark, wsAiTextView, wsComparePdf, wsFileCompressor, wsQrGenerator, wsRedactPdf].forEach(v => {
       v.classList.add('hidden');
     });
 
     // Determine Workspace display
     if (['merge-pdf', 'split-pdf', 'organize-pdf', 'rotate-pdf', 'crop-pdf', 'page-numbers', 
-         'repair-pdf', 'protect-pdf', 'unlock-pdf', 'redact-pdf',
+         'repair-pdf', 'protect-pdf', 'unlock-pdf',
          'pdf-to-word', 'word-to-pdf', 'pdf-to-ppt', 'ppt-to-pdf', 'pdf-to-excel', 'excel-to-pdf',
          'pdf-to-jpg', 'jpg-to-pdf', 'pdf-to-markdown', 'pdf-to-pdfa', 'image-converter', 'video-extractor'].includes(toolId)) {
       
@@ -195,6 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (toolId === 'qr-generator') {
       wsQrGenerator.classList.remove('hidden');
       initQrSandbox();
+    } else if (toolId === 'redact-pdf') {
+      wsRedactPdf.classList.remove('hidden');
+      initRedactSandbox();
     }
 
     // Dynamic Extra controls injection
@@ -231,6 +240,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="space-y-2">
           <label class="text-xs text-slate-450 dark:text-slate-405 block font-semibold mb-1">Page Number to Extract</label>
           <input type="number" id="pdf-split-page" min="1" value="1" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-750 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none">
+        </div>
+      `;
+      extraControls.classList.remove('hidden');
+    } else if (toolId === 'protect-pdf') {
+      extraControls.innerHTML = `
+        <div class="space-y-2">
+          <label class="text-xs text-slate-450 dark:text-slate-405 block font-semibold mb-1">Set Password to Protect PDF</label>
+          <input type="password" id="pdf-protect-password" placeholder="Enter password to secure file" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-750 text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none">
         </div>
       `;
       extraControls.classList.remove('hidden');
@@ -354,15 +371,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  let signatureColor = '#000000';
+
   function initSignatureCanvas() {
     canvasSignatureContext = sigCanvas.getContext('2d');
     canvasSignatureContext.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
     canvasSignatureContext.lineWidth = 3;
-    canvasSignatureContext.strokeStyle = '#f8fafc'; // slate-50
     canvasSignatureContext.lineCap = 'round';
     signatureLocked = false;
     saveSigBtn.textContent = 'Lock Brush';
     saveSigBtn.className = 'px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all';
+
+    // Default ink color is Black
+    signatureColor = '#000000';
+    canvasSignatureContext.strokeStyle = signatureColor;
+
+    // Ink Color Buttons setup
+    const sigColorBtns = document.querySelectorAll('.sig-color-btn');
+    const sigColorPicker = document.getElementById('sig-color-picker');
+
+    // Reset highlights on buttons
+    const highlightActiveColor = (selectedColor) => {
+      sigColorBtns.forEach(btn => {
+        if (btn.getAttribute('data-color') === selectedColor) {
+          btn.classList.add('border-slate-350');
+          btn.classList.remove('border-transparent');
+          btn.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+        } else {
+          btn.classList.add('border-transparent');
+          btn.classList.remove('border-slate-350');
+          btn.style.boxShadow = '';
+        }
+      });
+    };
+    highlightActiveColor(signatureColor);
+
+    sigColorBtns.forEach(btn => {
+      // Remove old listener to avoid multiples
+      btn.onclick = () => {
+        signatureColor = btn.getAttribute('data-color');
+        highlightActiveColor(signatureColor);
+        canvasSignatureContext.strokeStyle = signatureColor;
+        if (sigColorPicker) sigColorPicker.value = signatureColor;
+      };
+    });
+
+    if (sigColorPicker) {
+      sigColorPicker.oninput = (e) => {
+        signatureColor = e.target.value;
+        highlightActiveColor('');
+        canvasSignatureContext.strokeStyle = signatureColor;
+      };
+    }
 
     // Mouse events
     sigCanvas.addEventListener('mousedown', startSignatureDraw);
@@ -389,12 +449,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const rect = sigCanvas.getBoundingClientRect();
     canvasSignatureContext.beginPath();
     canvasSignatureContext.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    canvasSignatureContext.strokeStyle = signatureColor;
+    canvasSignatureContext.lineWidth = 3;
+    canvasSignatureContext.lineCap = 'round';
   }
 
   function drawSignatureLine(e) {
     if (!isDrawingSignature || signatureLocked) return;
     const rect = sigCanvas.getBoundingClientRect();
     canvasSignatureContext.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    canvasSignatureContext.strokeStyle = signatureColor;
     canvasSignatureContext.stroke();
   }
 
@@ -717,6 +781,153 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // 11b. REDACT PDF WORKSPACE SCRIPT
+  // ==========================================
+  const redactPagesContainer = document.getElementById('redact-pages-container');
+  const redactFileInput = document.getElementById('redact-file-input');
+  const redactDropzone = document.getElementById('redact-dropzone');
+  const redactDropzoneText = document.getElementById('redact-dropzone-text');
+  let loadedRedactPdf = null;
+
+  function initRedactSandbox() {
+    loadedRedactPdf = null;
+    redactPagesContainer.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">Select a document first to load interactive pages here.</p>';
+    redactDropzoneText.textContent = 'Click to choose PDF to Redact';
+    
+    redactDropzone.onclick = () => redactFileInput.click();
+    redactFileInput.onchange = async (e) => {
+      if (e.target.files.length > 0) {
+        loadedRedactPdf = e.target.files[0];
+        redactDropzoneText.innerHTML = `🟢 Loaded: <b>${loadedRedactPdf.name}</b>`;
+        
+        redactPagesContainer.innerHTML = `
+          <div class="flex items-center justify-center p-8 gap-2 text-indigo-400">
+            <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span class="text-xs font-semibold text-slate-300">Rendering PDF pages onto interactive canvases...</span>
+          </div>
+        `;
+        
+        try {
+          const fileBytes = await loadedRedactPdf.arrayBuffer();
+          // Load document with pdf.js
+          const loadingTask = pdfjsLib.getDocument({ data: fileBytes });
+          const pdf = await loadingTask.promise;
+          
+          redactPagesContainer.innerHTML = '';
+          
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.3 });
+            
+            // Create wrapper div
+            const wrapper = document.createElement('div');
+            wrapper.className = "redact-page-wrapper relative inline-block w-full border border-slate-700/50 rounded-xl bg-slate-950 overflow-hidden shadow-lg select-none mb-6 cursor-crosshair";
+            
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.className = "w-full block bg-white";
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            
+            const context = canvas.getContext('2d');
+            wrapper.appendChild(canvas);
+            
+            // Label tag showing Page Number
+            const label = document.createElement('span');
+            label.className = "absolute top-2 left-2 px-2 py-1 bg-slate-900/80 backdrop-blur border border-slate-700 text-white rounded text-[10px] font-bold z-10 select-none pointer-events-none";
+            label.textContent = `Page ${pageNum} of ${pdf.numPages}`;
+            wrapper.appendChild(label);
+            
+            redactPagesContainer.appendChild(wrapper);
+            
+            // Render content to canvas
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            
+            // Attach mouse events to draw selection rectangles
+            let isDrawing = false;
+            let startX = 0, startY = 0;
+            let activeSelectionDiv = null;
+            
+            wrapper.addEventListener('mousedown', (ev) => {
+              if (ev.button !== 0) return; // Only left click
+              const rect = wrapper.getBoundingClientRect();
+              startX = ev.clientX - rect.left;
+              startY = ev.clientY - rect.top;
+              isDrawing = true;
+              
+              activeSelectionDiv = document.createElement('div');
+              activeSelectionDiv.className = "redact-selection-box absolute border border-dashed border-rose-600 bg-rose-500/10 pointer-events-none";
+              activeSelectionDiv.style.left = `${startX}px`;
+              activeSelectionDiv.style.top = `${startY}px`;
+              wrapper.appendChild(activeSelectionDiv);
+            });
+            
+            wrapper.addEventListener('mousemove', (ev) => {
+              if (!isDrawing || !activeSelectionDiv) return;
+              const rect = wrapper.getBoundingClientRect();
+              const currentX = Math.min(rect.width, Math.max(0, ev.clientX - rect.left));
+              const currentY = Math.min(rect.height, Math.max(0, ev.clientY - rect.top));
+              
+              const x = Math.min(startX, currentX);
+              const y = Math.min(startY, currentY);
+              const w = Math.abs(startX - currentX);
+              const h = Math.abs(startY - currentY);
+              
+              activeSelectionDiv.style.left = `${x}px`;
+              activeSelectionDiv.style.top = `${y}px`;
+              activeSelectionDiv.style.width = `${w}px`;
+              activeSelectionDiv.style.height = `${h}px`;
+            });
+            
+            wrapper.addEventListener('mouseup', () => {
+              if (!isDrawing) return;
+              isDrawing = false;
+              if (activeSelectionDiv) {
+                const w = parseFloat(activeSelectionDiv.style.width) || 0;
+                const h = parseFloat(activeSelectionDiv.style.height) || 0;
+                
+                // Avoid small mouse movements (less than 6 pixels width/height)
+                if (w < 6 || h < 6) {
+                  activeSelectionDiv.remove();
+                  activeSelectionDiv = null;
+                  return;
+                }
+                
+                // Finalize active selection with interactive close button
+                const finalDiv = activeSelectionDiv;
+                finalDiv.className = "redact-selection-box absolute border-2 border-rose-500 bg-rose-500/20 select-none";
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.className = "absolute top-0.5 right-0.5 w-4 h-4 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center font-bold text-[10px] pointer-events-auto leading-none border-0 shadow";
+                closeBtn.innerHTML = "×";
+                closeBtn.onclick = (event) => {
+                  event.stopPropagation();
+                  finalDiv.remove();
+                };
+                
+                finalDiv.appendChild(closeBtn);
+                activeSelectionDiv = null;
+              }
+            });
+          }
+          
+          showModalToast('PDF loaded. Drag across pages to mark redactions.');
+        } catch (renderErr) {
+          console.error(renderErr);
+          redactPagesContainer.innerHTML = `
+            <div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs">
+              Failed to parse and render PDF pages: ${renderErr.message || renderErr}
+            </div>
+          `;
+        }
+      }
+    };
+  }
+
+  // ==========================================
   // 12. QR CODE WORKSPACE SCRIPT
   // ==========================================
   const qrUrlInput = document.getElementById('qr-url-input');
@@ -856,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = uploadQueue[0];
 
     if (['merge-pdf', 'split-pdf', 'organize-pdf', 'rotate-pdf', 'crop-pdf', 'page-numbers', 
-         'repair-pdf', 'protect-pdf', 'unlock-pdf', 'redact-pdf',
+         'repair-pdf', 'protect-pdf', 'unlock-pdf',
          'pdf-to-word', 'word-to-pdf', 'pdf-to-ppt', 'ppt-to-pdf', 'pdf-to-excel', 'excel-to-pdf',
          'pdf-to-jpg', 'jpg-to-pdf', 'pdf-to-markdown', 'pdf-to-pdfa', 'image-converter', 'video-extractor'].includes(activeToolId)) {
       if (uploadQueue.length === 0) {
@@ -969,22 +1180,20 @@ document.addEventListener('DOMContentLoaded', () => {
       generatedResultName = `repaired_${file.name}`;
     }
 
-    // PDF password credentials stamp metadata
+    // PDF password credentials stamp metadata and secure lock
     else if (activeToolId === 'protect-pdf') {
+      const passwordInput = document.getElementById('pdf-protect-password');
+      const passwordVal = passwordInput ? passwordInput.value : '';
+      if (!passwordVal) throw new Error('Please enter a password to protect the PDF.');
+
       const fileBytes = await file.arrayBuffer();
       const pdfDoc = await PDFLib.PDFDocument.load(fileBytes);
-      pdfDoc.setSubject("Locked via EazyGen PWA Suite");
-      const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-      pdfDoc.getPages().forEach(page => {
-        page.drawText("SECURED WITH AES LOCAL HANDLER", {
-          x: 15,
-          y: 15,
-          size: 8,
-          font: font,
-          color: PDFLib.rgb(0.7, 0.1, 0.1)
-        });
-      });
-      const pdfBytes = await pdfDoc.save();
+      const unencryptedBytes = await pdfDoc.save();
+
+      // Dynamically load the client-side encryption library
+      const { encryptPDF } = await import('https://esm.sh/@pdfsmaller/pdf-encrypt-lite');
+      const pdfBytes = await encryptPDF(unencryptedBytes, passwordVal);
+
       generatedResultBlob = new Blob([pdfBytes], { type: 'application/pdf' });
       generatedResultName = `protected_${file.name}`;
     }
@@ -998,24 +1207,59 @@ document.addEventListener('DOMContentLoaded', () => {
       generatedResultName = `unlocked_${file.name}`;
     }
 
-    // PDF Redact headers
+    // PDF Redact headers with canvas bounding box burn-in flattening
     else if (activeToolId === 'redact-pdf') {
-      const fileBytes = await file.arrayBuffer();
-      const pdfDoc = await PDFLib.PDFDocument.load(fileBytes);
-      const pages = pdfDoc.getPages();
-      pages.forEach(page => {
-        const { width, height } = page.getSize();
-        page.drawRectangle({
-          x: 60,
-          y: height - 120,
-          width: width - 120,
-          height: 40,
-          color: PDFLib.rgb(0, 0, 0)
+      if (!loadedRedactPdf) throw new Error('Please choose a PDF file to redact first.');
+      
+      const redactPagesContainer = document.getElementById('redact-pages-container');
+      const wrappers = redactPagesContainer.querySelectorAll('.redact-page-wrapper');
+      if (wrappers.length === 0) throw new Error('No pages rendered. Please load a valid PDF file.');
+      
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      
+      for (let i = 0; i < wrappers.length; i++) {
+        const wrapper = wrappers[i];
+        const canvas = wrapper.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Find and burn all selections onto the canvas
+        const selectionBoxes = wrapper.querySelectorAll('.redact-selection-box');
+        selectionBoxes.forEach(box => {
+          const clientW = canvas.clientWidth;
+          const clientH = canvas.clientHeight;
+          const scaleX = canvas.width / clientW;
+          const scaleY = canvas.height / clientH;
+          
+          const x = parseFloat(box.style.left) * scaleX;
+          const y = parseFloat(box.style.top) * scaleY;
+          const w = parseFloat(box.style.width) * scaleX;
+          const h = parseFloat(box.style.height) * scaleY;
+          
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(x, y, w, h);
         });
-      });
+        
+        // Rasterize the page canvas to JPEG image bytes
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        
+        // Convert base64 data to ArrayBuffer bytes
+        const dataurl = imgData;
+        const arr = dataurl.split(',');
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        
+        const pdfImg = await pdfDoc.embedJpg(u8arr);
+        const page = pdfDoc.addPage([canvas.width, canvas.height]);
+        page.drawImage(pdfImg, { x: 0, y: 0, width: canvas.width, height: canvas.height });
+      }
+      
       const pdfBytes = await pdfDoc.save();
       generatedResultBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-      generatedResultName = `redacted_${file.name}`;
+      generatedResultName = `redacted_${loadedRedactPdf.name}`;
     }
 
     // Signature stamp implementation
